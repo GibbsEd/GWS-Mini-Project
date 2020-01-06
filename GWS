@@ -1,0 +1,484 @@
+
+--Epitype
+
+If OBJECT_ID ('DimEpitype') is not null	--if table exists then it will be dropped first before running the rest
+Begin
+	Drop table DimEpitype
+End
+
+select distinct
+	Epitype as ID
+	,case
+		when epitype = '0' OR epitype = '1' then 'General Episode (Other)'
+		when epitype = '2' then 'Delivery Episode'
+		when epitype = '3' then 'Birth Episode'
+		when epitype = '4' then 'Formally detained (Mental health/Psychiatric Patients)'
+		when epitype = '5' then 'Other Delivery Event'
+		when epitype = '6' then 'Other Birth Event'
+	End as Description
+	into DimEpitype
+from APC
+
+
+
+--SEX
+
+If OBJECT_ID ('DimSex') is not null
+Begin
+	Drop table DimSex 
+End
+
+select distinct
+	sex as ID
+	,case
+		when sex = '0' then 'Unknown'
+		when sex = '1' then 'Male'
+		when sex = '2' then 'Female'
+		when sex = '3' then 'Indeterminate, including those undergoing sex change operations'
+		when sex = '9' then 'Not Specified'
+	End as Description
+	into DimSex
+from APC
+
+
+
+-- EPISTAT
+
+If OBJECT_ID ('DimEpistat') is not null
+Begin
+	Drop table DimEpistat
+End
+
+select distinct
+	epistat as ID
+	,case
+		when epistat = '1' then 'Unfinished'
+		when epistat = '3' then 'Finished'
+		when epistat = '9' then 'Derived unfinished (not present on processed data)'
+	End as Description
+	into DimEpistat
+from APC
+
+
+
+--ADMINCAT
+
+If OBJECT_ID ('DimAdmincat') is not null
+Begin
+	Drop table DimAdmincat
+End
+	--split these into two parts, description and explanation, as the admin category may be useful for grouping and is more difficult to understand with the whole bunch of text
+	--the explanation is only needed to further someones udnerstanding if necessary, and is not good to include such a large amount of text in a table 
+select distinct		
+	admincat as ID
+	,case
+		when admincat = '1' then 'NHS Patient'
+		when admincat = '2' then 'Private Patient'
+		when admincat = '3' then 'Amenity Patient'
+		when admincat = '4' then 'Category II Patient'
+		when admincat = '98' then 'Not applicable'
+		when admincat = '99' then 'Not known: a validation error'
+	End as Description
+	,case
+		when admincat = '1' then 'Including overseas visitors charged under Section 121 of the NHS Act 1977 as amended by Section 7(12) and (14) of the Health and Medicine Act 1988'
+		when admincat = '2' then 'One who uses accommodation or services authorised under section 65 and/or 66 of the NHS Act 1977 (Section 7(10) of Health and Medicine Act 1988 refers) as amended by Section 26 of the National Health Service and Community Care Act 1990'
+		when admincat = '3' then 'One who pays for the use of a single room or small ward in accord with section 12 of the NHS Act 1977, as amended by section 7(12) and (14) of the Health and Medicine Act 1988'
+		when admincat = '4' then 'One for whom work is undertaken by hospital medical or dental staff within categories II as defined in paragraph 37 of the Terms and Conditions of Service of Hospital Medical and Dental Staff'
+		when admincat = '98' then 'Not applicable'
+		when admincat = '99' then 'Not known: a validation error'
+	End as [Explanation]
+	into DimAdmincat
+from APC
+
+
+
+-- ADMINCATST
+
+If OBJECT_ID ('DimAdmincatst') is not null
+Begin
+	Drop table DimAdmincatst
+End
+	--same as above for this column too, unnecessary to always include so much text, therefore separated the two
+select distinct
+	admincatst as ID
+	,case
+		when admincatst = '1' then 'NHS Patient'
+		when admincatst = '2' then 'Private Patient'
+		when admincatst = '3' then 'Amenity Patient'
+		when admincatst = '4' then 'Category II Patient'
+		when admincatst = '98' then 'Not applicable'
+		when admincatst = '99' then 'Not known: a validation error'
+	End as Description
+	,case
+		when admincatst = '1' then 'Including overseas visitors charged under Section 121 of the NHS Act 1977 as amended by Section 7(12) and (14) of the Health and Medicine Act 1988'
+		when admincatst = '2' then 'One who uses accommodation or services authorised under section 65 and/or 66 of the NHS Act 1977 (Section 7(10) of Health and Medicine Act 1988 refers) as amended by Section 26 of the National Health Service and Community Care Act 1990'
+		when admincatst = '3' then 'One who pays for the use of a single room or small ward in accord with section 12 of the NHS Act 1977, as amended by section 7(12) and (14) of the Health and Medicine Act 1988'
+		when admincatst = '4' then 'One for whom work is undertaken by hospital medical or dental staff within categories II as defined in paragraph 37 of the Terms and Conditions of Service of Hospital Medical and Dental Staff'
+		when admincatst = '98' then 'Not applicable'
+		when admincatst = '99' then 'Not known: a validation error'
+	End as [Explanation]
+	into DimAdmincatst
+from APC
+
+
+
+-- CATEGORY
+
+If OBJECT_ID ('DimCategory') is not null
+Begin
+	Drop table DimCategory
+End
+
+select distinct
+	category as ID
+	,case
+		when category = '10' then 'NHS patient: not formally detained'
+		when category = '11' then 'NHS patient: formally detained under Part II of the Mental Health Act 1983'
+		when category = '12' then 'NHS patient: formally detained under Part III of the Mental Health Act 1983 or under other Acts'
+		when category = '13' then 'NHS patient: formally detained under part X, Mental Health Act 1983'
+		when category = '20' then 'Private patient: not formally detained'
+		when category = '21' then 'Private patient: formally detained under Part II of the Mental Health Act 1983'
+		when category = '22' then 'Private patient: formally detained under Part III of the Mental Health Act 1983 or under other Acts'
+		when category = '23' then 'Private patient: formally detained under part X, Mental health Act 1983'
+		when category = '30' then 'Amenity patient: not formally detained'
+		when category = '31' then 'Amenity patient: formally detained under Part II of the Mental Health Act 1983'
+		when category = '32' then 'Amenity patient: formally detained under Part III of the Mental Health Act 1983 or under other Acts'
+		when category = '33' then 'Amenity patient: formally detained under part X, Mental health Act 1983'
+		when category IS Null then 'Other maternity event'
+	End as Description
+	into DimCategory
+from APC
+
+
+
+--ELECDUR
+
+If OBJECT_ID ('DimElecdur') is not null
+Begin
+	Drop table DimElecdur
+End
+	
+select distinct
+	elecdur as ID
+	,case
+		when elecdur = '9998' then 'Not Applicable'
+		when elecdur = '9999' then 'Not known'
+		else elecdur 
+	end as Description
+	into DimElecdur
+from APC 
+
+
+
+--ELECDURCALC
+
+If OBJECT_ID ('DimElecdurcalc') is not null
+Begin
+	Drop table DimElecdurcalc
+End
+
+select distinct
+	elecdur_calc as ID
+	,case
+		when elecdur_calc = '9998' then 'Not Applicable'
+		when elecdur_calc = '9999' then 'Not known'
+		else elecdur_calc 
+	end as Description
+	into DimElecdurcalc
+from APC 
+
+
+
+-- ETHNOS
+If OBJECT_ID ('DimEthnos') is not null
+Begin
+	Drop table DimEthnos
+End
+		--some null values for Ethnos so I made each of these unknown. Using the code below some null values still remained so added code to the Join Data at the end 
+select distinct
+	ethnos as ID
+	,case
+		when ethnos = 'A' then 'British (White)'
+		when ethnos = 'B' then 'Irish (White)'
+		when ethnos = 'C' then 'Any other White background'
+		when ethnos = 'D' then 'White and Black Caribbean (Mixed)'
+		when ethnos = 'E' then 'White and Black African (Mixed)'
+		when ethnos = 'F' then 'White and Asian (Mixed)' 
+		when ethnos = 'G' then 'Any other Mixed background'
+		when ethnos = 'H' then 'Indian (Asian or Asian British)'
+		when ethnos = 'J' then 'Pakistani (Asian or Asian British)'
+		when ethnos = 'K' then 'Bangladeshi (Asian or Asian British)'
+		when ethnos = 'L' then 'Any other Asian background'
+		when ethnos = 'M' then 'Caribbean (Black or Black British)'
+		when ethnos = 'N' then 'African (Black or Black British)'
+		when ethnos = 'P' then 'Any other Black background'
+		when ethnos = 'R' then 'Chinese (other ethnic group)'
+		when ethnos = 'S' then 'Any other ethnic group'
+		when ethnos = 'Z' then 'Not stated'
+		when ethnos = 'X' then 'Not known (prior to 2013)'
+		when ethnos = '0' then 'White'
+		when ethnos = '1' then 'Black - Caribbean'
+		when ethnos = '2' then 'Black - African'
+		when ethnos = '3' then 'Black - Other'
+		when ethnos = '4' then 'Indian'
+		when ethnos = '5' then 'Pakistani'
+		when ethnos = '6' then 'Bangladeshi'
+		when ethnos = '7' then 'Chinese'
+		when ethnos = '8' then 'Any other ethnic group'
+		when ethnos = '9' then 'Not given'
+		when ethnos = '99' then 'Not known'
+		when ethnos = 'Null' then 'Unknown'
+		when ethnos IS Null then 'Unknown'
+	End as Description	
+	into DimEthnos
+from APC
+
+
+-- LEGLCAT
+
+If OBJECT_ID ('DimLeglcat') is not null
+Begin
+	Drop table DimLeglcat
+End
+		--similar to above, easier to understand this section without all the text so separated them 
+select distinct
+	leglcat as ID
+	,case
+		when leglcat = '01' then 'Informal'
+		when leglcat = '02' then 'Formally detained'
+		when leglcat = '03' then 'Formally detained'
+		when leglcat = '04' then 'Formally detained'
+		when leglcat = '05' then 'Formally detained'
+		when leglcat = '06' then 'Formally detained'
+		when leglcat = '07' then 'Formally detained'
+		when leglcat = '08' then 'Formally detained'
+		when leglcat = '09' then 'Formally detained'
+		when leglcat = '10' then 'Formally detained'
+		when leglcat = '11' then 'Formally detained'
+		when leglcat = '12' then 'Formally detained'
+		when leglcat = '13' then 'Formally detained'
+		when leglcat = '14' then 'Formally detained'
+		when leglcat = '15' then 'Formally detained'
+		when leglcat = '16' then 'Formally detained'
+		when leglcat = '17' then 'Formally detained'
+		when leglcat = '18' then 'Formally detained'
+		when leglcat = '19' then 'Formally detained'
+		when leglcat = '20' then 'Formally detained'
+		when leglcat = '21' then 'Formally detained'
+		when leglcat = '22' then 'Formally detained'
+		when leglcat = '23' then 'Formally detained'
+		when leglcat = '24' then 'Supervised discharge' 
+		when leglcat = '25' then 'Formally detained'
+		when leglcat = '26' then 'Not applicable'  
+		when leglcat = '27' or leglcat = '00' then 'Not known'
+	End as Description
+	,case 
+		when leglcat = '01' then 'Not applicable'
+		when leglcat = '02'	then 'Mental Health Act, Section 2'  
+		when leglcat = '03'	then 'Mental Health Act, Section 3'
+		when leglcat = '04'	then 'Mental Health Act, Section 4'
+		when leglcat = '05'	then 'Mental Health Act, Section 5(2)'
+		when leglcat = '06'	then 'Mental Health Act, Section 5(4)'
+		when leglcat = '07'	then 'Mental Health Act, Section 35'
+		when leglcat = '08'	then 'Mental Health Act, Section 36'
+		when leglcat = '09'	then 'Mental Health Act, Section 37 with Section 41 restrictions' 
+		when leglcat = '10'	then 'Mental Health Act, Section 37 excluding Section 37(4)'
+		when leglcat = '11'	then 'Mental Health Act, Section 37(4)'
+		when leglcat = '12'	then 'Mental Health Act, Section 38'
+		when leglcat = '13'	then 'Mental Health Act, Section 44'  
+		when leglcat = '14'	then 'Mental Health Act, Section 46'
+		when leglcat = '15'	then 'Mental Health Act, Section 47 with Section 49 restrictions'  
+		when leglcat = '16'	then 'Mental Health Act, Section 47'  
+		when leglcat = '17'	then 'Mental Health Act, Section 48 with Section 49 restrictions'  
+		when leglcat = '18'	then 'Mental Health Act, Section 48' 
+		when leglcat = '19'	then 'Mental Health Act, Section 135' 
+		when leglcat = '20'	then 'Mental Health Act, Section 136'   
+		when leglcat = '21'	then 'Previous legislation (fifth schedule)'
+		when leglcat = '22'	then 'Criminal Procedure (Insanity) Act 1964 as amended by the Criminal Procedures (Insanity and Unfitness to Plead) Act 1991'
+		when leglcat = '23'	then 'Other Acts'
+		when leglcat = '24'	then 'Mental Health (Patients in the Community) Act 1995'
+		when leglcat = '25'	then 'Mental Health Act, Section 45A'
+		when leglcat = '26' then 'Not applicable'  
+		when leglcat = '27' or leglcat = '00' then 'Not known'
+	End as [Legal Act]
+	into DimLeglcat
+from APC
+
+
+
+-- ADMIMETH
+
+If OBJECT_ID ('DimAdmissionmethod') is not null
+Begin
+	Drop table DimAdmissionmethod
+End
+		--categorised these into larger groups to help with any visualisations and understanding. The De3scription part is a different level of granularity to the Type, so better in new column. 
+		--potentially could separate the description column into 'Heading' and 'Explanation' to understand it all easier, and make visualisations better
+select distinct
+	admimeth as ID
+	,case
+		when Admimeth = '11' OR admimeth = '12' Or admimeth = '13' then 'Elective Admission'
+		when Admimeth = '21' OR admimeth = '22' Or admimeth = '23' OR Admimeth = '24' OR admimeth = '25' Or admimeth = '2A' Or admimeth = '2B' Or admimeth = '2C' Or admimeth = '2D' Or admimeth = '28' then 'Emergency Admission'
+		when Admimeth = '31' OR admimeth = '32' then 'Maternity Admission'
+		when Admimeth = '81' OR admimeth = '82' or admimeth = '83' or admimeth = '84' or admimeth = '89' then 'Other Admission'
+		when Admimeth = '98' OR admimeth = '99' then 'Unknown Admission'
+	End as [Type of Admission]
+	,case
+		when Admimeth = '11' then 'Waiting list : A Patient admitted electively from a waiting list having been given no date of admission at a time a decision was made to admit'
+		when admimeth = '12' then 'Booked. A Patient admitted having been given a date at the time the decision to admit was made, determined mainly on the grounds of resource availability'
+		when admimeth = '13' then 'Planned. A Patient admitted, having been given a date or approximate date at the time that the decision to admit was made. This is usually part of a planned sequence of clinical care determined mainly on social or clinical criteria (e.g. check cystoscopy)". A planned admission is one where the date of admission is determined by the needs of the treatment, rather than by the availability of resources. Note that this does not include a transfer from another Hospital Provider (see 81 below)'
+		when Admimeth = '21' then 'Accident and emergency or dental casualty department of the Health Care Provider  '
+		when admimeth = '22' then 'General Practitioner: after a request for immediate admission has been made direct to a Hospital Provider, i.e. not through a Bed bureau, by a General Practitioner: or deputy'
+		when admimeth = '23' then 'Bed bureau'
+		when Admimeth = '24' then 'Consultant Clinic, of this or another Health Care Provider'   
+		when admimeth = '25' then 'Admission via Mental Health Crisis Resolution Team'
+		when admimeth = '2A' then 'Accident and Emergency Department of another provider where the patient had not been admitted'
+		when admimeth = '2B' then 'Transfer of an admitted patient from another Hospital Provider in an emergency'
+		when admimeth = '2C' then 'Baby born at home as intended'
+		when admimeth = '2D' then 'Other emergency admission'
+		when admimeth = '28' then 'Other means (e.g.  Admitted from the Accident and Emergency Department of another provider where they had not been admitted, Transfer of an admitted patient from another Hospital Provider in an emergency, Baby born at home as intended'
+		when Admimeth = '31' then 'Admitted ante-partum' 
+		when admimeth = '32' then 'Admitted post-partum'
+		when Admimeth = '81' then 'Transfer of any admitted patient from other Hospital Provider other than in an emergency'
+		when admimeth = '82' then 'The birth of a baby in this Health Care Provider'
+		when admimeth = '83' then 'Baby born outside the Health Care Provider except when born at home as intended'
+		when admimeth = '84' then 'Admission by Admissions Panel of a High Security Psychiatric Hospital, patient not entered on the HSPH Admissions Waiting List'
+		when admimeth = '89' then 'HSPH Admissions Waiting List of a High Security Psychiatric Hospital'
+		when Admimeth = '98' then 'Not applicable'
+		when admimeth = '99' then 'Not known: a validation error'
+	End as [Description]
+	into DimAdmissionmethod
+from APC 
+
+
+
+--ADMISORC
+
+If OBJECT_ID ('DimAdmisorc') is not null
+Begin
+	Drop table DimAdmisorc
+End
+
+select distinct
+	admisorc as ID
+	,case
+		when admisorc = '19' then 'The usual place of residence, unless listed below, for example, a private dwelling whether owner occupied or owned by Local Authority, housing association or other landlord. This includes wardened accommodation but not residential accommodation where health care is provided. It also includes PATIENTS with no fixed abode'
+		when admisorc = '29' then 'Temporary place of residence when usually resident elsewhere, for example, hotels and residential educational establishments'
+		when admisorc = '30' then 'Repatriation from high security psychiatric hospital'
+		when admisorc = '37' then 'Penal establishment: court'
+		when admisorc = '38' then 'Penal establishment: police station' 
+		when admisorc = '39' then 'Penal establishment, Court or Police Station /  Police Custody Suite' 
+		when admisorc = '48' then 'High security psychiatric hospital, Scotland' 
+		when admisorc = '49' then 'NHS other hospital provider: high security psychiatric accommodation in an NHS hospital provider (NHS trust or NHS Foundation Trust)' 
+		when admisorc = '50' then 'NHS other hospital provider: medium secure unit' 
+		when admisorc = '51' then 'NHS other hospital provider: ward for general patients or the younger physically disabled or A&E department' 
+		when admisorc = '52' then 'NHS other hospital provider: ward for maternity patients or neonates' 
+		when admisorc = '53' then 'NHS other hospital provider: ward for patients who are mentally ill or have learning disabilities'
+		when admisorc = '54' then 'NHS run Care Home' 
+		when admisorc = '65' then 'Local authority residential accommodation i.e. where care is provided'  
+		when admisorc = '66' then 'Local authority foster care, but not in residential accommodation i.e. where care is provided' 
+		when admisorc = '69' then 'Local authority home or care' 
+		when admisorc = '79' then 'Babies born in or on the way to hospital' 
+		when admisorc = '85' then 'Non-NHS (other than Local Authority) run care home' 
+		when admisorc = '86' then 'Non-NHS (other than Local Authority) run nursing home' 
+		when admisorc = '87' then 'Non-NHS run hospital'  
+		when admisorc = '88' then 'non-NHS (other than Local Authority) run hospice'  
+		when admisorc = '89' then 'Non-NHS institution' 
+		when admisorc = '98' then 'Not applicable' 
+		when admisorc = '99' then 'Not known' 
+	End as [Description]
+	into DimAdmisorc
+from APC 
+
+
+
+--CLASSPAT
+
+If OBJECT_ID ('DimClasspat') is not null
+Begin
+	Drop table DimClasspat
+End
+
+select distinct
+	classpat as ID
+	,case 
+		when classpat = '1' then 'Ordinary admission'
+		when classpat = '2' then 'Day case admission'
+		when classpat = '3' then 'Regular day attender'
+		when classpat = '4' then 'Regular night attender'
+		when classpat = '5' then 'Mothers and babies using only delivery facilities'
+		when classpat = '8' then 'Not applicable (other maternity event)'
+		when classpat = '9' then 'Not known'
+	End as [Description]
+	into DimClasspat
+from APC 
+
+
+
+--JOIN
+
+If OBJECT_ID ('JoinedData') is not null
+Begin
+	Drop table JoinedData
+End
+
+select 
+	hesid PatientIdentifier
+	,lopatid LocalPatientIdentifier
+	,s.Description as Sex
+	,dob DOB 
+	,case										--a null value for NHS num means it is unknown, so this categorises it in a better way.
+		when newnhsno is null then 'Unknown'	--also babies who are under 6 months of age will have null values for this, so cannot categorise any other way
+		Else newnhsno
+	End as NewNHSNum 
+	,newnhsno_check NHSNumCheck
+	,episode EpisodeNumber
+	,epistart EpisodeStart
+	,epiend EpisodeEnd
+	,ep.Description as EpisodeType
+	,DATEDIFF(dd, epistart, epiend) BedDaysPerDataYear	--some days are nulls, therefore DAtediff helps to fill some missing gaps in this column
+	,epidur EpisodeDuration
+	,es.Description as EpisodeStatus
+	,spellbgin BeginningOfSpell
+	,activage ActiveAge
+	,admiage AdmissionAge
+	,ad.Description as AdministrativeCategory
+	,ad.Explanation as Explanation
+	,ads.Description as AdministrativeCategoryStartOfEpisode
+	,ads.Explanation as ExtraDetail
+	,c.Description as Category
+	,endage EndAge
+	,case									--helps to get rid of some nulls which still occured from the above code for Ethnos
+		when et.Description IS Null then 'Unknown'
+		Else et.Description
+	End as Ethnos
+	,l.Description as LegalCategory --split this into two 
+	,l.[legal act] as LegalAct
+	,admistart AdmissionStart
+	,startage AgeOnAdmission
+	,adm.[Type of Admission] as TypeOfAdmission
+	,adm.Description as AdmissionMethod
+	,adc.Description as AdmissionSource
+	,elecdate DateOfDecisionToAdmit
+	,el.Description As DurationOfElectiveWait
+	,elc.Description as DurationOfElectiveWaitDerived
+	,cl.Description as PatientClassification
+	,diag_01 as Diagnosis							--this needs to be made more readable hwoever no reference data 
+	into JoinedData
+from APC a
+	left join DimEpitype ep on a.epitype = ep.ID 
+	left join DimSex s on a.sex = s.ID 
+	left join DimEpistat es on a.epistat = es.ID 
+	left join Dimadmincat ad on a.admincat = ad.ID 
+	left join Dimadmincatst ads on a.admincatst = ads.ID 
+	left join DimCategory c on a.category = c.ID 
+	left join DimEthnos et on a.ethnos = et.ID 
+	left join DimLeglcat l on a.leglcat = l.ID 
+	left join DimAdmissionmethod adm on a.admimeth = adm.ID 
+	left join DimAdmisorc adc on a.admisorc = adc.ID 
+	left join DimClasspat cl on a.classpat = cl.ID 
+	left join DimElecdur el on a.elecdur = el.ID
+	left join DimElecdurcalc elc on a.elecdur_calc = elc.ID 
+
+
+select * from JoinedData 
